@@ -128,23 +128,24 @@ def generate_lines(namespace: Namespace, lines: int = None) -> list[str]:
     return [generate_line(namespace) for _ in range(lines)]
 
 
-def generate_file(namespace: Namespace, affix: str):
+def generate_file(namespace: Namespace, affix: str) -> None:
     filename = namespace.filename + affix + '.jsonl'
     path = namespace.output + '/' + filename
     with open(path, 'w') as file:
         file.write('\n'.join(generate_lines(namespace)))
 
 
-def generate_files(namespace: Namespace, affixes: list[str]):
+def generate_files(namespace: Namespace, affixes: list[str]) -> None:
     for affix in affixes:
         generate_file(namespace, affix)
 
 
-def main_stdout(namespace: Namespace):
+def main_stdout(namespace: Namespace) -> None:
     for _ in range(namespace.lines):
         print(generate_line(namespace))
 
-def main_generate_files(namespace: Namespace):
+
+def main_generate_files(namespace: Namespace) -> None:
     if not os.path.exists(namespace.output):
         os.mkdir(namespace.output)
     affixes = generate_affixes(namespace.affix, namespace.count)
