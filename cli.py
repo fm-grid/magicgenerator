@@ -2,7 +2,9 @@ from argparse import ArgumentParser, Namespace
 import generator
 import json
 import os
+import pytest
 import sys
+from unittest.mock import patch
 
 
 def _create_parser() -> ArgumentParser:
@@ -56,7 +58,7 @@ def _load_schema(schema: str) -> dict[str, str]:
     else: # path to a schema file
         with open(schema, 'r') as file:
             json_string = file.read()
-    return json.loads(json_string)
+    return json.loads(json_string.replace('\'', '\"'))
 
 
 def _parse_arguments(parser: ArgumentParser, args: list[str]) -> Namespace:
@@ -91,3 +93,49 @@ def get_arguments() -> Namespace:
     parser = _create_parser()
     namespace = _parse_arguments(parser, sys.argv[1:])
     return namespace
+
+
+ARG_FILE = ['-f', 'file']
+ARG_SCHEMA = ['-s', "{'age':'int:rand(1, 100)'}"]
+ARGS = ARG_FILE + ARG_SCHEMA
+@pytest.mark.parametrize('args,is_valid', [
+    (ARG_FILE + ARG_SCHEMA, True),
+
+    (ARGS + ['-c', '10'], True),
+    (ARGS + ['-c', '0'], True),
+    (ARGS + ['-c', '-10'], False),
+
+    (ARGS + ['-a', 'count'], True),
+    (ARGS + ['-a', 'random'], True),
+    (ARGS + ['-a', 'uuid'], True),
+    (ARGS + ['-a', 'rand'], False),
+    (ARGS + ['-a', 'aaa'], False),
+
+    (ARG_FILE + ['-s', "{'age':'int:rand(1, 100)'}"], True),
+    (ARG_FILE + ['-s', "{'age':'int:'}"], True),
+    (ARG_FILE + ['-s', "{'age':'int:10'}"], True),
+    (ARG_FILE + ['-s', "{'age':'int:aaa'}"], False),
+    (ARG_FILE + ['-s', "{'age':'int:[1,50,100]'}"], True),
+    (ARG_FILE + ['-s', "{'age':'int:[1,???,100]'}"], False),
+
+    (ARG_FILE + ['-s', "{'age':'str:rand(1, 100)'}"], False),
+
+    (ARGS + ['-l', '1000'], True),
+    (ARGS + ['-l', '0'], False),
+    (ARGS + ['-l', '-1000'], False),
+
+    (ARGS + ['-p', '-10'], False),
+    (ARGS + ['-p', '1'], True),
+    (ARGS + ['-p', '999'], True)
+])
+def test_get_arguments(args, is_valid):
+    with patch('sys.argv', [''] + args):
+        if is_valid:
+            get_arguments()
+        else:
+            with pytest.raises(SystemExit):
+                get_arguments()
+
+
+if __name__ == '__main__':
+    pytest.main([__file__])
