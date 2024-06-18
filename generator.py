@@ -20,6 +20,21 @@ class Generator:
         return same_class and same_values
 
 
+class SchemaGenerator(Generator):
+
+    def __init__(self, schema: dict[str, str]):
+        self.schema = dict()
+        for k, v in schema.items():
+            type, value = v.split(':')
+            self.schema[k] = create_generator(type, value)
+
+    def get(self):
+        result = dict()
+        for k, v in self.schema.items():
+            result[k] = v.get()
+        return result
+
+
 class TimestampGenerator(Generator):
 
     def __init__(self):
