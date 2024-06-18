@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import logging
 import pytest
 import random
 import re
@@ -23,10 +24,12 @@ class Generator:
 class SchemaGenerator(Generator):
 
     def __init__(self, schema: dict[str, str]) -> None:
+        logging.debug('attempting to parse the schema')
         self.schema = dict()
         for k, v in schema.items():
             type, value = v.split(':')
             self.schema[k] = create_generator(type, value)
+        logging.info('schema parsed successfully')
 
     def get(self) -> dict[str, str | int | float]:
         result = dict()

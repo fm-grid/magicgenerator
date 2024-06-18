@@ -2,6 +2,7 @@ from argparse import Namespace
 import cli
 from concurrent.futures import ThreadPoolExecutor
 import json
+import logging
 import os
 import random
 import uuid
@@ -50,6 +51,7 @@ def _generate_file(namespace: Namespace, affix: str) -> None:
     path = namespace.output + '/' + filename
     with open(path, 'w') as file:
         file.write('\n'.join(_generate_lines(namespace)))
+        logging.info(f'generated file: {path}')
 
 
 def _generate_files(namespace: Namespace, affixes: list[str]) -> None:
@@ -73,9 +75,12 @@ def _main_stdout(namespace: Namespace) -> None:
 
 def _prepare_dir(namespace: Namespace) -> None:
     if not os.path.exists(namespace.output):
+        logging.info('directory does not exist, creating it')
         os.mkdir(namespace.output)
     
     if namespace.clear_path:
+        logging.info('clearing the directory (--clear-path argument)')
+        deleted_files = 0
         for file in os.listdir(namespace.output):
             path = os.path.join(namespace.output, file)
             if not os.path.isfile(path):
@@ -83,6 +88,8 @@ def _prepare_dir(namespace: Namespace) -> None:
             if not str(file).startswith(namespace.filename):
                 continue
             os.remove(path)
+            deleted_files += 1
+        logging.info(f'deleted {deleted_files} file(s)')
 
 
 def _main_generate_files(namespace: Namespace) -> None:
