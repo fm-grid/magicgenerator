@@ -21,8 +21,8 @@ def _create_parser() -> ArgumentParser:
     )
     parser.add_argument('-f', '--filename',
         type=str,
-        help='base file name, when generating multiplie files it will be expanded by an affix, do not specify the extension',
-        required=True
+        default='file',
+        help='base file name (default: \'file\'), when generating multiplie files it will be expanded by an affix, do not specify the extension'
     )
     parser.add_argument('-a', '--affix',
         choices=['count', 'random', 'uuid'],
