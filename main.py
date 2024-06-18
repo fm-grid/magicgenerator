@@ -1,5 +1,9 @@
 from argparse import ArgumentParser, Namespace
+import generator
+import json
+import os
 import sys
+
 
 def create_parser() -> ArgumentParser:
     parser = ArgumentParser()
@@ -15,7 +19,7 @@ def create_parser() -> ArgumentParser:
     )
     parser.add_argument('-f', '--filename',
         type=str,
-        help='base file name, when generating multiplie files it will be expanded by an affix',
+        help='base file name, when generating multiplie files it will be expanded by an affix, do not specify the extension',
         required=True
     )
     parser.add_argument('-a', '--affix',
@@ -45,14 +49,48 @@ def create_parser() -> ArgumentParser:
     return parser
 
 
+def load_schema(schema: str) -> dict[str, str]:
+    json_string: str
+    if '{' in schema: # inline schema
+        json_string = schema
+    else: # path to a schema file
+        with open(schema, 'r') as file:
+            json_string = file.read()
+    return json.loads(json_string)
+
+
 def parse_arguments(parser: ArgumentParser, args: list[str]) -> Namespace:
     namespace = parser.parse_args(args)
-    print(namespace)
-    ...
+
+    # count
+    if namespace.count < 0:
+        parser.error(f'argument -c/--count: invalid non-negative int value: {namespace.count}')
+    
+    # schema
+    schema_generator: generator.SchemaGenerator
+    try:
+        schema = load_schema(namespace.schema)
+        schema_generator = generator.SchemaGenerator(schema)
+    except ValueError:
+        parser.error(f'argument -s/--schema: invalid schema')
+    namespace.generator = schema_generator
+    
+    # lines
+    if namespace.lines <= 0:
+        parser.error(f'argument -l/--lines: invalid positive int value: {namespace.lines}')
+    
+    # processes
+    if namespace.processes <= 0:
+        parser.error(f'argument -p/--processes: invalid positive int value: {namespace.processes}')
+    namespace.processes = min(namespace.processes, os.cpu_count())
+    
+    return namespace
+
 
 def main():
     parser = create_parser()
     namespace = parse_arguments(parser, sys.argv[1:])
+    print(namespace)
 
 
 if __name__ == '__main__':
