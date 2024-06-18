@@ -7,7 +7,7 @@ import random
 import uuid
 
 
-def generate_affixes(type: str, count: int) -> list[str]:
+def _generate_affixes(type: str, count: int) -> list[str]:
     match type:
         case 'count':
             digits = len(str(count - 1))
@@ -26,52 +26,52 @@ def generate_affixes(type: str, count: int) -> list[str]:
             return list(values)
 
 
-def list_split(list: list, n: int) -> list[list]:
+def _list_split(list: list, n: int) -> list[list]:
     sublists = [[] for _ in range(n)]
     for index, item in enumerate(list):
         sublists[index % n].append(item)
     return sublists
 
 
-def generate_line(namespace: Namespace) -> str:
+def _generate_line(namespace: Namespace) -> str:
     data = namespace.generator.get()
     line = json.dumps(data)
     return line
 
 
-def generate_lines(namespace: Namespace, lines: int = None) -> list[str]:
+def _generate_lines(namespace: Namespace, lines: int = None) -> list[str]:
     if lines is None:
         lines = namespace.lines
-    return [generate_line(namespace) for _ in range(lines)]
+    return [_generate_line(namespace) for _ in range(lines)]
 
 
-def generate_file(namespace: Namespace, affix: str) -> None:
+def _generate_file(namespace: Namespace, affix: str) -> None:
     filename = namespace.filename + affix + '.jsonl'
     path = namespace.output + '/' + filename
     with open(path, 'w') as file:
-        file.write('\n'.join(generate_lines(namespace)))
+        file.write('\n'.join(_generate_lines(namespace)))
 
 
-def generate_files(namespace: Namespace, affixes: list[str]) -> None:
+def _generate_files(namespace: Namespace, affixes: list[str]) -> None:
     for affix in affixes:
-        generate_file(namespace, affix)
+        _generate_file(namespace, affix)
 
 
-def generate_files_multithreaded(namespace: Namespace, affixes: list[str], threads: int = None) -> None:
+def _generate_files_multithreaded(namespace: Namespace, affixes: list[str], threads: int = None) -> None:
     if threads is None:
         threads = namespace.processes
-    affix_lists = list_split(affixes, threads)
+    affix_lists = _list_split(affixes, threads)
     with ThreadPoolExecutor(max_workers=threads) as executor:
-        func = lambda affixes: generate_files(namespace, affixes)
+        func = lambda affixes: _generate_files(namespace, affixes)
         executor.map(func, affix_lists)
 
 
-def main_stdout(namespace: Namespace) -> None:
+def _main_stdout(namespace: Namespace) -> None:
     for _ in range(namespace.lines):
-        print(generate_line(namespace))
+        print(_generate_line(namespace))
 
 
-def prepare_dir(namespace: Namespace) -> None:
+def _prepare_dir(namespace: Namespace) -> None:
     if not os.path.exists(namespace.output):
         os.mkdir(namespace.output)
     
@@ -85,10 +85,10 @@ def prepare_dir(namespace: Namespace) -> None:
             os.remove(path)
 
 
-def main_generate_files(namespace: Namespace) -> None:
-    prepare_dir(namespace)
-    affixes = generate_affixes(namespace.affix, namespace.count)
-    generate_files_multithreaded(namespace, affixes)
+def _main_generate_files(namespace: Namespace) -> None:
+    _prepare_dir(namespace)
+    affixes = _generate_affixes(namespace.affix, namespace.count)
+    _generate_files_multithreaded(namespace, affixes)
 
 
 def main():
@@ -96,10 +96,10 @@ def main():
 
     match namespace.count:
         case 0:
-            main_stdout(namespace)
+            _main_stdout(namespace)
 
         case _:
-            main_generate_files(namespace)
+            _main_generate_files(namespace)
 
 
 if __name__ == '__main__':

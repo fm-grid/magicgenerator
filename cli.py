@@ -5,7 +5,7 @@ import os
 import sys
 
 
-def create_parser() -> ArgumentParser:
+def _create_parser() -> ArgumentParser:
     parser = ArgumentParser()
     parser.add_argument('-o', '--output',
         type=str,
@@ -49,7 +49,7 @@ def create_parser() -> ArgumentParser:
     return parser
 
 
-def load_schema(schema: str) -> dict[str, str]:
+def _load_schema(schema: str) -> dict[str, str]:
     json_string: str
     if '{' in schema: # inline schema
         json_string = schema
@@ -59,7 +59,7 @@ def load_schema(schema: str) -> dict[str, str]:
     return json.loads(json_string)
 
 
-def parse_arguments(parser: ArgumentParser, args: list[str]) -> Namespace:
+def _parse_arguments(parser: ArgumentParser, args: list[str]) -> Namespace:
     namespace = parser.parse_args(args)
 
     # count
@@ -69,7 +69,7 @@ def parse_arguments(parser: ArgumentParser, args: list[str]) -> Namespace:
     # schema
     schema_generator: generator.SchemaGenerator
     try:
-        schema = load_schema(namespace.schema)
+        schema = _load_schema(namespace.schema)
         schema_generator = generator.SchemaGenerator(schema)
     except ValueError:
         parser.error(f'argument -s/--schema: invalid schema')
@@ -88,6 +88,6 @@ def parse_arguments(parser: ArgumentParser, args: list[str]) -> Namespace:
 
 
 def get_arguments() -> Namespace:
-    parser = create_parser()
-    namespace = parse_arguments(parser, sys.argv[1:])
+    parser = _create_parser()
+    namespace = _parse_arguments(parser, sys.argv[1:])
     return namespace
