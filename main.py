@@ -140,19 +140,38 @@ def generate_files(namespace: Namespace, affixes: list[str]) -> None:
         generate_file(namespace, affix)
 
 
+def generate_files_multithreaded(namespace: Namespace, affixes: list[str], threads: int = None) -> None:
+    if threads is None:
+        threads = namespace.processes
+    affix_lists = list_split(affixes, threads)
+    with ThreadPoolExecutor(max_workers=threads) as executor:
+        func = lambda affixes: generate_files(namespace, affixes)
+        executor.map(func, affix_lists)
+
+
 def main_stdout(namespace: Namespace) -> None:
     for _ in range(namespace.lines):
         print(generate_line(namespace))
 
 
-def main_generate_files(namespace: Namespace) -> None:
+def prepare_dir(namespace: Namespace) -> None:
     if not os.path.exists(namespace.output):
         os.mkdir(namespace.output)
+    
+    if namespace.clear_path:
+        for file in os.listdir(namespace.output):
+            path = os.path.join(namespace.output, file)
+            if not os.path.isfile(path):
+                continue
+            if not str(file).startswith(namespace.filename):
+                continue
+            os.remove(path)
+
+
+def main_generate_files(namespace: Namespace) -> None:
+    prepare_dir(namespace)
     affixes = generate_affixes(namespace.affix, namespace.count)
-    affix_lists = list_split(affixes, namespace.processes)
-    with ThreadPoolExecutor(max_workers=namespace.processes) as executor:
-        func = lambda affixes: generate_files(namespace, affixes)
-        executor.map(func, affix_lists)
+    generate_files_multithreaded(namespace, affixes)
 
 
 def main():
