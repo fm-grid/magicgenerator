@@ -22,13 +22,13 @@ class Generator:
 
 class SchemaGenerator(Generator):
 
-    def __init__(self, schema: dict[str, str]):
+    def __init__(self, schema: dict[str, str]) -> None:
         self.schema = dict()
         for k, v in schema.items():
             type, value = v.split(':')
             self.schema[k] = create_generator(type, value)
 
-    def get(self):
+    def get(self) -> dict[str, str | int | float]:
         result = dict()
         for k, v in self.schema.items():
             result[k] = v.get()
@@ -37,10 +37,10 @@ class SchemaGenerator(Generator):
 
 class TimestampGenerator(Generator):
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
     
-    def get(self):
+    def get(self) -> float:
         return datetime.timestamp(datetime.now())
     
 
@@ -49,7 +49,7 @@ class ConstGenerator(Generator):
     DEFAULT_CONST_STR = ''
     DEFAULT_CONST_INT = None
 
-    def __init__(self, type: str, value=None):
+    def __init__(self, type: str, value=None) -> None:
         if type not in ['str', 'int']:
             raise ValueError
         match (type, value):
@@ -68,7 +68,7 @@ class ConstGenerator(Generator):
                     raise ValueError
                 self.value = v
     
-    def get(self):
+    def get(self) -> str | int:
         return self.value
 
 
@@ -77,17 +77,17 @@ class RangeGenerator(Generator):
     DEFAULT_MIN = 0
     DEFAULT_MAX = 10_000
 
-    def __init__(self, min: int = DEFAULT_MIN, max: int = DEFAULT_MAX):
+    def __init__(self, min: int = DEFAULT_MIN, max: int = DEFAULT_MAX) -> None:
         self.min = min
         self.max = max
     
-    def get(self):
+    def get(self) -> int:
         return random.randint(self.min, self.max)
 
 
 class ListGenerator(Generator):
     
-    def __init__(self, values: list[str] | list[int]):
+    def __init__(self, values: list[str] | list[int]) -> None:
         if len(values) < 1:
             raise ValueError
         is_strs = True
@@ -101,16 +101,16 @@ class ListGenerator(Generator):
             raise ValueError
         self.values = set(values)
     
-    def get(self):
+    def get(self) -> str | int:
         return random.choice(list(self.values))
 
 
 class RandomStrGenerator(Generator):
     
-    def __init__(self):
+    def __init__(self) -> None:
         pass
     
-    def get(self):
+    def get(self) -> str:
         return str(uuid.uuid4())
 
 
