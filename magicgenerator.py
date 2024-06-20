@@ -9,6 +9,9 @@ import uuid
 
 
 def _generate_affixes(type: str, count: int) -> list[str]:
+    if count < 1:
+        raise ValueError
+
     match type:
         case 'count':
             digits = len(str(count - 1))
@@ -25,6 +28,8 @@ def _generate_affixes(type: str, count: int) -> list[str]:
             while len(values) < count:
                 values.add(str(uuid.uuid4()))
             return list(values)
+        case _:
+            raise ValueError
 
 
 def _list_split(list: list, n: int) -> list[list]:
