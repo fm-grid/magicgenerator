@@ -16,13 +16,13 @@ def _generate_affixes(type: str, count: int) -> list[str]:
         case 'count':
             digits = len(str(count - 1))
             return [f'{i:0{digits}d}' for i in range(count)]
-    
+
         case 'random':
             values = set()
             while len(values) < count:
                 values.add(random.randbytes(16).hex())
             return list(values)
-        
+
         case 'uuid':
             values = set()
             while len(values) < count:
@@ -72,7 +72,8 @@ def _generate_files_multithreaded(namespace: Namespace, affixes: list[str], thre
         threads = namespace.processes
     affix_lists = _list_split(affixes, threads)
     with ThreadPoolExecutor(max_workers=threads) as executor:
-        func = lambda affixes: _generate_files(namespace, affixes)
+        def func(affixes):
+            _generate_files(namespace, affixes)
         executor.map(func, affix_lists)
 
 
@@ -85,7 +86,7 @@ def _prepare_dir(namespace: Namespace) -> None:
     if not os.path.exists(namespace.output):
         logging.info('directory does not exist, creating it')
         os.mkdir(namespace.output)
-    
+
     if namespace.clear_path:
         logging.info('clearing the directory (--clear-path argument)')
         deleted_files = 0

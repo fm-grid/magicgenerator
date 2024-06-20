@@ -6,6 +6,8 @@ from unittest.mock import patch
 ARG_FILE = ['-f', 'file']
 ARG_SCHEMA = ['-s', '{\"age\":\"int:rand(1, 100)\"}']
 ARGS = ARG_FILE + ARG_SCHEMA
+
+
 @pytest.mark.parametrize('args,is_valid', [
     (ARG_FILE + ARG_SCHEMA, True),
 

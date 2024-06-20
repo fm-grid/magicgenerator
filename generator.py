@@ -10,10 +10,10 @@ class Generator:
 
     def __init__(self):
         raise ValueError
-    
+
     def get(self):
         raise ValueError
-    
+
     def __eq__(self, other):
         same_class = self.__class__.__name__ == other.__class__.__name__
         same_values = self.__dict__ == other.__dict__
@@ -41,10 +41,10 @@ class TimestampGenerator(Generator):
 
     def __init__(self) -> None:
         pass
-    
+
     def get(self) -> float:
         return time.time()
-    
+
 
 class ConstGenerator(Generator):
 
@@ -69,7 +69,7 @@ class ConstGenerator(Generator):
                 if not isinstance(v, int):
                     raise ValueError
                 self.value = v
-    
+
     def get(self) -> str | int:
         return self.value
 
@@ -82,13 +82,13 @@ class RangeGenerator(Generator):
     def __init__(self, min: int = DEFAULT_MIN, max: int = DEFAULT_MAX) -> None:
         self.min = min
         self.max = max
-    
+
     def get(self) -> int:
         return random.randint(self.min, self.max)
 
 
 class ListGenerator(Generator):
-    
+
     def __init__(self, values: list[str] | list[int]) -> None:
         if len(values) < 1:
             raise ValueError
@@ -102,16 +102,16 @@ class ListGenerator(Generator):
         if not (is_strs or is_ints):
             raise ValueError
         self.values = set(values)
-    
+
     def get(self) -> str | int:
         return random.choice(list(self.values))
 
 
 class RandomStrGenerator(Generator):
-    
+
     def __init__(self) -> None:
         pass
-    
+
     def get(self) -> str:
         return str(uuid.uuid4())
 
@@ -126,7 +126,7 @@ def _create_str_generator(value: str) -> Generator:
 
         case _ if value.startswith('rand'):
             raise ValueError
-        
+
         case _ if value.startswith('[') and value.endswith(']'):
             value = value.replace('\'', '\"')
             values = json.loads(value)
@@ -136,10 +136,10 @@ def _create_str_generator(value: str) -> Generator:
                 if not isinstance(v, str):
                     raise ValueError
             return ListGenerator(values)
-        
+
         case _ if isinstance(value, str):
             return ConstGenerator('str', value)
-        
+
         case _:
             raise ValueError
 
@@ -148,7 +148,7 @@ def _create_int_generator(value: str) -> Generator:
     match value:
         case '':
             return ConstGenerator('int')
-        
+
         case 'rand':
             return RangeGenerator()
 
@@ -159,7 +159,7 @@ def _create_int_generator(value: str) -> Generator:
             min = int(match.group(1))
             max = int(match.group(2))
             return RangeGenerator(min, max)
-        
+
         case _ if value.startswith('[') and value.endswith(']'):
             values = json.loads(value)
             if not isinstance(values, list):
@@ -168,14 +168,14 @@ def _create_int_generator(value: str) -> Generator:
                 if not isinstance(v, int):
                     raise ValueError
             return ListGenerator(values)
-        
+
         case _ if isinstance(value, str):
             try:
                 value = int(value)
-            except:
+            except ValueError:
                 raise ValueError
             return ConstGenerator('int', value)
-        
+
         case _:
             raise ValueError
 
@@ -186,7 +186,7 @@ def create_generator(type: str, value: str) -> Generator:
             if value != '':
                 raise ValueError
             return TimestampGenerator()
-        
+
         case 'str':
             return _create_str_generator(value)
 

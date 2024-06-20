@@ -12,8 +12,8 @@ def test_timestamp_generator():
 
 
 @pytest.mark.parametrize('args,output', [
-    (['int'],None),
-    (['str'],''),
+    (['int'], None),
+    (['str'], ''),
     (['int', 10], 10),
     (['str', 'aaa'], 'aaa')
 ])

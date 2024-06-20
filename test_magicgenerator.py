@@ -21,20 +21,23 @@ def test_generate_affixes(type, count, is_valid):
             magicgenerator._generate_affixes(type, count)
 
 
-@pytest.mark.parametrize('list,parts', [
+@pytest.mark.parametrize('number_list,parts', [
     ([1, 2, 3, 4, 5, 6, 7, 8], 2),
     ([1, 2, 3, 4, 5, 6, 7, 8], 3),
     ([1, 2, 3, 4, 5, 6, 7, 8], 5),
     ([1, 2, 3, 4, 5, 6, 7, 8], 6)
 ])
-def test_list_split(list, parts):
-    lists = magicgenerator._list_split(list, parts)
-    lengths = {len(l) for l in lists}
+def test_list_split(number_list, parts):
+    partial_lists = magicgenerator._list_split(number_list, parts)
+    lengths = {len(partial_list) for partial_list in partial_lists}
     assert (max(lengths) - min(lengths)) <= 1
 
 
 BASE_FILENAME_FILES = 3
 UNRELATED_FILES = 3
+ALL_FILES = BASE_FILENAME_FILES + UNRELATED_FILES
+
+
 @pytest.fixture
 def example_dir(tmp_path):
     (tmp_path / 'file1.jsonl').write_text('{}')
@@ -57,13 +60,13 @@ def test_generate_file(example_dir, args, count):
         '--clear-path'
     ]
     with patch('sys.argv', full_args):
-        assert len(os.listdir(example_dir)) == BASE_FILENAME_FILES + UNRELATED_FILES
+        assert len(os.listdir(example_dir)) == ALL_FILES
         magicgenerator.main()
         assert len(os.listdir(example_dir)) == count + UNRELATED_FILES
 
 
 def test_prepare_dir(example_dir):
-    assert len(os.listdir(example_dir)) == BASE_FILENAME_FILES + UNRELATED_FILES
+    assert len(os.listdir(example_dir)) == ALL_FILES
     namespace = Namespace(
         output=str(example_dir),
         filename='file',
