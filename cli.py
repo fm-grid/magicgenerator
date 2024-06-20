@@ -1,4 +1,5 @@
 from argparse import ArgumentParser, Namespace
+import configparser
 import generator
 import json
 import logging
@@ -7,27 +8,37 @@ import sys
 from unittest.mock import patch
 
 
+CONFIG_FILE = 'config.ini'
+
+
 def _create_parser() -> ArgumentParser:
+    config = configparser.ConfigParser()
+    config.read(CONFIG_FILE)
+    if 'DEFAULT' not in config:
+        logging.error('no config file found')
+        sys.exit(1)
+    default_config = config['DEFAULT']
+
     parser = ArgumentParser()
     parser.add_argument('-o', '--output',
         type=str,
-        default='.',
-        help='directory to which all generated files will be saved, default: current working directory'
+        default=default_config['output'],
+        help=f'directory to which all generated files will be saved, default: {default_config['output']}'
     )
     parser.add_argument('-c', '--count',
         type=int,
-        default=1,
-        help='number of json files to generate, default: 1'
+        default=int(default_config['count']),
+        help=f'number of json files to generate, default: {int(default_config['count'])}'
     )
     parser.add_argument('-f', '--filename',
         type=str,
-        default='file',
-        help='base file name (default: \'file\'), when generating multiplie files it will be expanded by an affix, do not specify the extension'
+        default=default_config['filename'],
+        help=f'base file name (default: \"{default_config['filename']}\"), when generating multiplie files it will be expanded by an affix, do not specify the extension'
     )
     parser.add_argument('-a', '--affix',
         choices=['count', 'random', 'uuid'],
-        default='count',
-        help='file name affix, required when generating multiple files, options: count (default), random, uuid'
+        default=default_config['affix'],
+        help=f'file name affix, required when generating multiple files, default: {default_config['affix']}'
     )
     parser.add_argument('-s', '--schema',
         type=str,
@@ -36,8 +47,8 @@ def _create_parser() -> ArgumentParser:
     )
     parser.add_argument('-l', '--lines',
         type=int,
-        default=1000,
-        help='number of lines each json file will contain, default: 1000'
+        default=int(default_config['lines']),
+        help=f'number of lines each json file will contain, default: {int(default_config['lines'])}'
     )
     parser.add_argument('--clear-path',
         action='store_true',
@@ -45,13 +56,13 @@ def _create_parser() -> ArgumentParser:
     )
     parser.add_argument('-p', '--processes',
         type=int,
-        default=1,
-        help='number of processes that will be used to generate files'
+        default=int(default_config['processes']),
+        help=f'number of processes that will be used to generate files, default: {int(default_config['processes'])}'
     )
     parser.add_argument('--log',
         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'],
-        default='INFO',
-        help='logging level to use, default: INFO'
+        default=default_config['log'],
+        help=f'logging level to use, default: {default_config['log']}'
     )
     return parser
 
