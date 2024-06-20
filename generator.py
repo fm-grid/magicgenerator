@@ -4,6 +4,7 @@ import logging
 import pytest
 import random
 import re
+import time
 import uuid
 
 
@@ -44,7 +45,7 @@ class TimestampGenerator(Generator):
         pass
     
     def get(self) -> float:
-        return datetime.timestamp(datetime.now())
+        return time.time()
     
 
 class ConstGenerator(Generator):
