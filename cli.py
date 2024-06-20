@@ -18,7 +18,10 @@ def _create_parser() -> ArgumentParser:
         sys.exit(1)
     default_config = config['DEFAULT']
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(
+        prog='magicgenerator',
+        description='This is a console utility that can generate random test data in the JSON lines format based on provided data schema.'
+    )
     parser.add_argument(  # output
         '-o',
         '--output',
