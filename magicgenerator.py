@@ -49,9 +49,12 @@ def _generate_lines(namespace: Namespace, lines: int = None) -> list[str]:
 def _generate_file(namespace: Namespace, affix: str) -> None:
     filename = namespace.filename + affix + '.jsonl'
     path = namespace.output + '/' + filename
-    with open(path, 'w') as file:
-        file.write('\n'.join(_generate_lines(namespace)))
-        logging.info(f'generated file: {path}')
+    try:
+        with open(path, 'w') as file:
+            file.write('\n'.join(_generate_lines(namespace)))
+            logging.info(f'generated file: \"{path}\"')
+    except OSError:
+        logging.error(f'unable to create file: \"{path}\"')
 
 
 def _generate_files(namespace: Namespace, affixes: list[str]) -> None:
@@ -95,7 +98,10 @@ def _prepare_dir(namespace: Namespace) -> None:
 def _main_generate_files(namespace: Namespace) -> None:
     _prepare_dir(namespace)
     affixes = _generate_affixes(namespace.affix, namespace.count)
-    _generate_files_multithreaded(namespace, affixes)
+    if len(affixes) > 1:
+        _generate_files_multithreaded(namespace, affixes)
+    else:
+        _generate_file(namespace, '')
 
 
 def main():

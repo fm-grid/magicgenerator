@@ -63,10 +63,17 @@ def _load_schema(schema: str) -> dict[str, str]:
         logging.debug('loading inline schema...')
         json_string = schema
     else: # path to a schema file
-        logging.debug(f'loading schema from a file ({schema})...')
-        with open(schema, 'r') as file:
-            json_string = file.read()
-    logging.debug(f'attempting to parse the schema: {json_string}')
+        logging.debug(f'loading schema from a file \"{schema}\"...')
+        try:
+            with open(schema, 'r') as file:
+                json_string = file.read()
+        except FileNotFoundError:
+            logging.error(f'unable to open file, not found: \"{schema}\"')
+            sys.exit(1)
+        except IsADirectoryError:
+            logging.error(f'unable to open file, it is a directory: \"{schema}\"')
+            sys.exit(1)
+    logging.debug(f'attempting to parse the schema: \"{json_string}\"')
     result = json.loads(json_string)
     logging.info(f'schema loaded successfully')
     return result
